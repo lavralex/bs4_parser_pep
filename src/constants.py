@@ -11,6 +11,7 @@ FILE = 'file'
 BASE_DIR = Path(__file__).parent
 LOGS_DIR_NAME = 'logs'
 RESULTS_DIR_NAME = 'results'
+DOWNLOAD_DIR_NAME = 'downloads'
 
 # Files
 LOG_FILE_NAME = 'parser.log'
@@ -21,9 +22,12 @@ LOG_FORMAT = '"%(asctime)s - [%(levelname)s] - %(message)s"'
 DT_FORMAT = '%d.%m.%Y %H:%M:%S'
 
 # Encoding
-LOG_ENCODING = 'utf-8'
-RESPONSE_ENCODING = 'utf-8'
+ENCODING = 'utf-8'
 
+# parsing module
+PARSING_MODULE = 'lxml'
+
+# PEP status
 EXPECTED_STATUS = {
     'A': ('Accepted', 'Active'),
     'D': ('Deferred'),

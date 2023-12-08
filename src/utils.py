@@ -1,11 +1,11 @@
 from requests import RequestException
 from bs4 import BeautifulSoup
 
-from exceptions import ParserFindTagException
-from constants import RESPONSE_ENCODING
+from exceptions import ParserFindTagException, NoResponseException
+from constants import ENCODING, PARSING_MODULE
 
 
-def get_response(session, url, encoding=RESPONSE_ENCODING):
+def get_response(session, url, encoding=ENCODING):
     # Для прохождения тестов
     try:
         response = session.get(url)
@@ -13,7 +13,7 @@ def get_response(session, url, encoding=RESPONSE_ENCODING):
         return response
     except RequestException:
         error_msg = f'Возникла ошибка при загрузке страницы {url}'
-        raise RequestException(error_msg)
+        raise NoResponseException(error_msg)
 
 
 def find_tag(soup, tag, attrs=None):
@@ -24,9 +24,9 @@ def find_tag(soup, tag, attrs=None):
     return searched_tag
 
 
-def get_soup(session, url):
+def get_soup(session, url, features=PARSING_MODULE):
     response = get_response(session, url)
     if response is None:
         return
-    soup = BeautifulSoup(response.text, features='lxml')
+    soup = BeautifulSoup(response.text, features)
     return soup

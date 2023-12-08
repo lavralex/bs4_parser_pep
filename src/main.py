@@ -7,9 +7,12 @@ import requests_cache
 from tqdm import tqdm
 
 from configs import configure_argument_parser, configure_logging
-from constants import BASE_DIR, MAIN_DOC_URL, PEP_TABLE_URL, EXPECTED_STATUS
+from constants import (
+    BASE_DIR, MAIN_DOC_URL, PEP_TABLE_URL, EXPECTED_STATUS, DOWNLOAD_DIR_NAME,
+)
 from outputs import control_output
 from utils import find_tag, get_soup
+from exceptions import VersionListNotFoundException
 
 
 def whats_new(session):
@@ -42,7 +45,9 @@ def latest_versions(session):
             a_tags = ul.find_all('a')
             break
     else:
-        raise Exception('Не найден список c версиями Python')
+        raise VersionListNotFoundException(
+            'Не найден список c версиями Python'
+        )
     results = [('Ссылка на документацию', 'Версия', 'Статус')]
     pattern = r'Python (?P<version>\d\.\d+) \((?P<status>.*)\)'
     for a_tag in a_tags:
@@ -61,17 +66,15 @@ def latest_versions(session):
 def download(session):
     downloads_url = urljoin(MAIN_DOC_URL, 'download.html')
     soup = get_soup(session, downloads_url)
-    main_tag = find_tag(soup, 'div', {'role': 'main'})
-    table_tag = find_tag(main_tag, 'table', {'class': 'docutils'})
     pdf_a4_tag = find_tag(
-        table_tag,
+        soup,
         'a',
         {'href': re.compile(r'.+pdf-a4\.zip$')}
     )
     pdf_a4_link = pdf_a4_tag['href']
     archive_url = urljoin(downloads_url, pdf_a4_link)
     filename = archive_url.split('/')[-1]
-    downloads_dir = BASE_DIR / 'downloads'
+    downloads_dir = BASE_DIR / DOWNLOAD_DIR_NAME
     downloads_dir.mkdir(exist_ok=True)
     archive_path = downloads_dir / filename
     response = session.get(archive_url)
@@ -83,12 +86,11 @@ def download(session):
 def pep(session):
     soup = get_soup(session, PEP_TABLE_URL)
     section = find_tag(soup, 'section', {'id': 'numerical-index'})
-    tbody = find_tag(section, 'tbody')
-    pep_rows = tbody.find_all('tr')
+    pep_rows = section.find_all('tr')
     results = [('Статус', 'Количество')]
     status_count = Counter()
     pep_count = 0
-    for row in tqdm(pep_rows):
+    for row in tqdm(pep_rows[1:]):
         status_abbreviation = find_tag(row, 'abbr').text[1:]
         try:
             status_in_table = EXPECTED_STATUS[status_abbreviation]

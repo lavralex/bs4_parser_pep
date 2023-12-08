@@ -10,7 +10,7 @@ from constants import (
     LOG_FILE_NAME,
     LOG_FORMAT,
     DT_FORMAT,
-    LOG_ENCODING
+    ENCODING
 )
 
 
@@ -41,7 +41,7 @@ def configure_logging():
     log_dir.mkdir(exist_ok=True)
     log_file = log_dir / LOG_FILE_NAME
     rotating_handler = RotatingFileHandler(
-        log_file, maxBytes=10 ** 6, backupCount=5, encoding=LOG_ENCODING
+        log_file, maxBytes=10 ** 6, backupCount=5, encoding=ENCODING
     )
     logging.basicConfig(
         datefmt=DT_FORMAT,
